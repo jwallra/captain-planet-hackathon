@@ -11,7 +11,7 @@ namespace CaptainPlanet.Models
         [JsonProperty("categories")]
         public List<Category> Categories;
 
-        [JsonProperty("description")]
+        [JsonProperty("tags")]
         public List<Tag> Tags;
 
         [JsonProperty("objects")]
