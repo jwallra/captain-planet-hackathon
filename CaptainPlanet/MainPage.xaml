@@ -1,7 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:CaptainPlanet" x:Class="CaptainPlanet.MainPage">
-    <StackLayout>
-        <!-- Place new controls here -->
-        <Label Text="Welcome to Xamarin.Forms!" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
-    </StackLayout>
+        <ScrollView>  
+            <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="StartAndExpand">  
+                <Image x:Name="imgBanner"></Image>  
+                <Image x:Name="imgChoosed" HeightRequest="200"></Image>  
+                <Button x:Name="btnPick" Text="Pick" Clicked="btnPick_Clicked"></Button>  
+                <Button x:Name="btnTake" Text="Take" Clicked="btnTake_Clicked"></Button>  
+                <Label Text="Result" x:Name="lblResult"></Label> </StackLayout>  
+        </ScrollView>  
 </ContentPage>
