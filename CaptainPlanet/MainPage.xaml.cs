@@ -60,6 +60,7 @@ namespace CaptainPlanet
         private async Task AnalyseFile(MediaFile file)
         {
             const string analysisFailedMessage = "Picture analysis failed.";
+            analysisResultText.Text = "";
             if (file == null) { 
                 HidePicture();
                 return;
@@ -80,12 +81,12 @@ namespace CaptainPlanet
                     analysisResultText.Text = analysisFailedMessage;
                     return;
                 }
-                analysisResultText.Text = $"{analysisResultText.Text}\nCategories:\n{result.Categories.First().Name}";
+                analysisResultText.Text = $"{analysisResultText.Text}\nCategories:";
                 foreach (var category in result.Categories)
                 {
                     analysisResultText.Text = $"{analysisResultText.Text}\n{category.Name}";
                 }
-                analysisResultText.Text = $"{analysisResultText.Text}\nTags:\n{result.Tags.First().Name}";
+                analysisResultText.Text = $"{analysisResultText.Text}\nTags:";
                 foreach (var tag in result.Tags)
                 {
                     analysisResultText.Text = $"{analysisResultText.Text}\n{tag.Name}";
