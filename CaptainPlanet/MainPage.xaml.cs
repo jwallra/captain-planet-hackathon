@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Plugin.Media;
+using Plugin.Media.Abstractions;
 using Xamarin.Forms;
 
 namespace CaptainPlanet
@@ -13,7 +15,7 @@ namespace CaptainPlanet
     public partial class MainPage : ContentPage
     {
         // subscriptionKey.
-        private const string subscriptionKey = "<SubscriptionKey>";
+        private const string subscriptionKey = "<secret>";
 
         private static readonly List<VisualFeatureTypes> features =
     new List<VisualFeatureTypes>()
@@ -28,92 +30,90 @@ namespace CaptainPlanet
             InitializeComponent();
         }
 
-        private async void takeAPicture(object sender, EventArgs e)
+        private async void TakeAPicture(object sender, EventArgs e)
         {
             await CrossMedia.Current.Initialize();
-            try
+            if (!CrossMedia.Current.IsCameraAvailable || !CrossMedia.Current.IsTakePhotoSupported)
             {
-                if (!CrossMedia.Current.IsCameraAvailable || !CrossMedia.Current.IsTakePhotoSupported)
-                {
-                    await DisplayAlert("No Camera", "No camera available.", "OK");
-                    return;
-                }
-                var file = await CrossMedia.Current.TakePhotoAsync(new Plugin.Media.Abstractions.StoreCameraMediaOptions
-                {
-                    Directory = "Sample",
-                    Name = "xamarin.jpg"
-                });
-                if (file == null)
-                {
-                    chosenPicture.IsVisible = false;
-                    noPictureText.IsVisible = true;
-                    return;
-                }
-                noPictureText.IsVisible = false;
-                chosenPicture.IsVisible = true;
-                chosenPicture.Source = ImageSource.FromStream(() => {
-                    var stream = file.GetStream();
-                    return stream;
-                });
-                var result = await GetImageDescription(file.GetStream());
-                file.Dispose();
-                analysisResultText.Text = null;
-                analysisResultText.Text = result.Description.Captions.First().Text;    
-                foreach (string tag in result.Description.Tags)
-                {
-                    analysisResultText.Text = analysisResultText.Text + "\n" + tag;
-                }
+                await DisplayAlert("No Camera", "No camera available.", "OK");
+                HidePicture();
+                return;
             }
-            catch (Exception ex)
+            var file = await CrossMedia.Current.TakePhotoAsync(new Plugin.Media.Abstractions.StoreCameraMediaOptions
             {
-                string test = ex.Message;
-            }
+                Directory = "Sample",
+                Name = "xamarin.jpg"
+            });
+            await AnalyseFile(file);
         }
 
-        private async void pickAPicture(object sender, EventArgs e)
+        private async void PickAPicture(object sender, EventArgs e)
         {
             await CrossMedia.Current.Initialize();
-            try
-            {
+
                 var file = await CrossMedia.Current.PickPhotoAsync(new Plugin.Media.Abstractions.PickMediaOptions
                 {
                     PhotoSize = Plugin.Media.Abstractions.PhotoSize.Medium
                 });
-                if (file == null)
+            await AnalyseFile(file);
+        }
+
+        private async Task AnalyseFile(MediaFile file)
+        {
+            const string analysisFailedMessage = "Picture analysis failed.";
+            if (file == null) { 
+                HidePicture();
+                return;
+            }
+
+            try
+            {
+                ShowPicture();
+                chosenPicture.Source = ImageSource.FromStream(() =>
                 {
-                    noPictureText.IsVisible = true;
-                    chosenPicture.IsVisible = false;
-                    return;
-                }
-                noPictureText.IsVisible = false;
-                chosenPicture.IsVisible = true;
-                chosenPicture.Source = ImageSource.FromStream(() => {
                     var stream = file.GetStream();
                     return stream;
                 });
+                analysisResultText.IsVisible = true;
                 var result = await GetImageDescription(file.GetStream());
-                analysisResultText.Text = null;
                 file.Dispose();
+                if (!result.Tags.Any() && !result.Categories.Any())
+                {
+                    analysisResultText.Text = analysisFailedMessage;
+                    return;
+                }
+                analysisResultText.Text = result.Description.Captions.First().Text;
                 foreach (string tag in result.Description.Tags)
                 {
-                    analysisResultText.Text = analysisResultText.Text + "\n" + tag;
+                    analysisResultText.Text = $"{analysisResultText.Text}\n{tag}";
                 }
             }
             catch (Exception ex)
             {
-                string test = ex.Message;
+                analysisResultText.Text = analysisFailedMessage;
+                Debug.WriteLine($"{analysisResultText.Text}: {ex.Message}");
             }
         }
 
-        public async Task<ImageAnalysis> GetImageDescription(Stream imageStream)
+        private async Task<ImageAnalysis> GetImageDescription(Stream imageStream)
         {
             ComputerVisionClient computerVision = new ComputerVisionClient(
                 new ApiKeyServiceClientCredentials(subscriptionKey),
                 new System.Net.Http.DelegatingHandler[] { });
-            computerVision.Endpoint = "<EndPoint>";
+            computerVision.Endpoint = "<endpointt>";
 
-            // Specify the features to return
+            // Analyse.
             return await computerVision.AnalyzeImageInStreamAsync(imageStream, features, null);
+        }
+
+        private void ShowPicture(){
+            noPictureText.IsVisible = false;
+            chosenPicture.IsVisible = true;
+        }
+
+        private void HidePicture(){
+            chosenPicture.IsVisible = false;
+            noPictureText.IsVisible = true;
         }
     }
 }

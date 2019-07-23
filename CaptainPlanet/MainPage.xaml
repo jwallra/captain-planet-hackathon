@@ -5,9 +5,9 @@
                 <Label Text="What's compostable?"/>  
                 <Label x:Name="noPictureText" Text="No picture."/>  
                 <Image x:Name="chosenPicture" HeightRequest="200" IsVisible="false"/>  
-                <Button x:Name="pickAPictureButton" Text="Pick a picture" Clicked="pickAPicture"/>  
-                <Button x:Name="takeAPictureButton" Text="Take a picture" Clicked="takeAPicture"/>  
-                <Label x:Name="analysisResultText" Text="Result"/>
+                <Button x:Name="pickAPictureButton" Text="Pick a picture" Clicked="PickAPicture"/>  
+                <Button x:Name="takeAPictureButton" Text="Take a picture" Clicked="TakeAPicture"/>  
+                <Label x:Name="analysisResultText" IsVisible="false"/>
         </StackLayout>  
         </ScrollView>  
 </ContentPage>
