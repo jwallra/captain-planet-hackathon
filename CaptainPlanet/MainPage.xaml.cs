@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
@@ -38,7 +37,7 @@ namespace CaptainPlanet
                 HidePicture();
                 return;
             }
-            var file = await CrossMedia.Current.TakePhotoAsync(new Plugin.Media.Abstractions.StoreCameraMediaOptions
+            var file = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
             {
                 Directory = "Sample",
                 Name = "xamarin.jpg"
@@ -50,10 +49,10 @@ namespace CaptainPlanet
         {
             await CrossMedia.Current.Initialize();
 
-                var file = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
-                {
-                    PhotoSize = PhotoSize.Medium
-                });
+            var file = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
+            {
+                PhotoSize = PhotoSize.Medium
+            });
             await AnalyseFile(file);
         }
 
@@ -67,13 +66,14 @@ namespace CaptainPlanet
 
             try
             {
-                ShowPicture();
                 chosenPicture.Source = ImageSource.FromStream(() =>
                 {
                     var stream = file.GetStream();
                     return stream;
                 });
                 var result = await GetImageDescription(file.GetStream());
+                ShowPicture();
+                IdentifyObjects(result.Objects);
                 file.Dispose();
             }
             catch (Exception ex)
@@ -91,6 +91,23 @@ namespace CaptainPlanet
 
             // Analyse.
             return await computerVision.AnalyzeImageInStreamAsync(imageStream, features, null);
+        }
+
+        private void IdentifyObjects(IList<DetectedObject> detectedObjects)
+        {
+            foreach (DetectedObject o in detectedObjects)
+            {
+                // Scale rectangle to rendered image
+                var xScaleFactor = chosenPicture.Width / o.Rectangle.W;
+                var yScaleFactor = chosenPicture.Height / o.Rectangle.H;
+                var rectangle = new Rectangle(
+                    chosenPicture.X + (o.Rectangle.W * xScaleFactor),
+                    chosenPicture.Y + (o.Rectangle.H * yScaleFactor),
+                    chosenPicture.Width * yScaleFactor,
+                    chosenPicture.Height * xScaleFactor);
+
+                // Draw this somehow
+            }
         }
 
         private void ShowPicture(){
