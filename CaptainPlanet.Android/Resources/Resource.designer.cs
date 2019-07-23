@@ -26,6 +26,9 @@ namespace CaptainPlanet.Droid
 		
 		public static void UpdateIdValues()
 		{
+			global::Microsoft.IdentityModel.Clients.ActiveDirectory.Resource.Id.agentWebView = global::CaptainPlanet.Droid.Resource.Id.agentWebView;
+			global::Microsoft.IdentityModel.Clients.ActiveDirectory.Resource.Layout.WebAuthenticationBroker = global::CaptainPlanet.Droid.Resource.Layout.WebAuthenticationBroker;
+			global::Microsoft.IdentityModel.Clients.ActiveDirectory.Resource.String.ApplicationName = global::CaptainPlanet.Droid.Resource.String.ApplicationName;
 			global::Xamarin.Forms.Platform.Android.Resource.Animation.abc_fade_in = global::CaptainPlanet.Droid.Resource.Animation.abc_fade_in;
 			global::Xamarin.Forms.Platform.Android.Resource.Animation.abc_fade_out = global::CaptainPlanet.Droid.Resource.Animation.abc_fade_out;
 			global::Xamarin.Forms.Platform.Android.Resource.Animation.abc_grow_fade_in_from_bottom = global::CaptainPlanet.Droid.Resource.Animation.abc_grow_fade_in_from_bottom;
@@ -5114,6 +5117,9 @@ namespace CaptainPlanet.Droid
 			// aapt resource value: 0x7f0a0027
 			public const int add = 2131361831;
 			
+			// aapt resource value: 0x7f0a00d4
+			public const int agentWebView = 2131362004;
+			
 			// aapt resource value: 0x7f0a0070
 			public const int alertTitle = 2131361904;
 			
@@ -5318,8 +5324,8 @@ namespace CaptainPlanet.Droid
 			// aapt resource value: 0x7f0a00cb
 			public const int main_toolbar = 2131361995;
 			
-			// aapt resource value: 0x7f0a00d5
-			public const int masked = 2131362005;
+			// aapt resource value: 0x7f0a00d6
+			public const int masked = 2131362006;
 			
 			// aapt resource value: 0x7f0a00bd
 			public const int media_actions = 2131361981;
@@ -5663,8 +5669,8 @@ namespace CaptainPlanet.Droid
 			// aapt resource value: 0x7f0a0016
 			public const int view_offset_helper = 2131361814;
 			
-			// aapt resource value: 0x7f0a00d4
-			public const int visible = 2131362004;
+			// aapt resource value: 0x7f0a00d5
+			public const int visible = 2131362005;
 			
 			// aapt resource value: 0x7f0a00af
 			public const int volume_item_container = 2131361967;
@@ -5975,6 +5981,9 @@ namespace CaptainPlanet.Droid
 			// aapt resource value: 0x7f040047
 			public const int tooltip = 2130968647;
 			
+			// aapt resource value: 0x7f040048
+			public const int WebAuthenticationBroker = 2130968648;
+			
 			static Layout()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
@@ -6009,6 +6018,9 @@ namespace CaptainPlanet.Droid
 		
 		public partial class String
 		{
+			
+			// aapt resource value: 0x7f0b003c
+			public const int ApplicationName = 2131427388;
 			
 			// aapt resource value: 0x7f0b0015
 			public const int abc_action_bar_home_description = 2131427349;
