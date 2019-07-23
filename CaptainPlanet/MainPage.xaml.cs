@@ -60,7 +60,6 @@ namespace CaptainPlanet
         private async Task AnalyseFile(MediaFile file)
         {
             const string analysisFailedMessage = "Picture analysis failed.";
-            analysisResultText.Text = "";
             if (file == null) { 
                 HidePicture();
                 return;
