@@ -1,13 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:CaptainPlanet" x:Class="CaptainPlanet.MainPage">
-        <ScrollView>  
-            <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="StartAndExpand">  
-                <Label x:Name="whatsCompostableText" Text="What's compostable?"/>  
-                <Label x:Name="noPictureText" Text="No picture."/>  
-                <Image x:Name="chosenPicture" HeightRequest="200" IsVisible="false"/>  
-                <Button x:Name="pickAPictureButton" Text="Pick a picture" Clicked="PickAPicture"/>  
-                <Button x:Name="takeAPictureButton" Text="Take a picture" Clicked="TakeAPicture"/>  
-                <Label x:Name="analysisResultText"/>
-        </StackLayout>  
-        </ScrollView>  
+    <StackLayout Orientation="Vertical">
+        <StackLayout VerticalOptions="FillAndExpand">
+            <StackLayout Orientation="Vertical" VerticalOptions="FillAndExpand" Margin="5">
+                <StackLayout VerticalOptions="Start" Orientation="Horizontal">
+                    <Label x:Name="whatsCompostableText" Text="What's compostable?" FontSize="Large" HorizontalOptions="Center"/>
+                </StackLayout>
+                <Label x:Name="noPictureText" Text="No image."/>
+                <Image x:Name="chosenPicture" Aspect="AspectFit" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" IsVisible="false"/>
+            </StackLayout>
+        </StackLayout>
+        <StackLayout VerticalOptions="End" HorizontalOptions="CenterAndExpand" Orientation="Horizontal">
+            <Button x:Name="pickAPictureButton" Text="Pick a picture" Clicked="PickAPicture"/>  
+            <Button x:Name="takeAPictureButton" Text="Take a picture" Clicked="TakeAPicture"/>
+        </StackLayout>
+    </StackLayout>
 </ContentPage>

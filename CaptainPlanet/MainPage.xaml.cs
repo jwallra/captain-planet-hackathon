@@ -75,26 +75,10 @@ namespace CaptainPlanet
                 });
                 var result = await GetImageDescription(file.GetStream());
                 file.Dispose();
-                if (!result.Tags.Any() && !result.Categories.Any())
-                {
-                    analysisResultText.Text = analysisFailedMessage;
-                    return;
-                }
-                analysisResultText.Text = $"{analysisResultText.Text}\nCategories:\n{result.Categories.First().Name}";
-                foreach (var category in result.Categories)
-                {
-                    analysisResultText.Text = $"{analysisResultText.Text}\n{category.Name}";
-                }
-                analysisResultText.Text = $"{analysisResultText.Text}\nTags:\n{result.Tags.First().Name}";
-                foreach (var tag in result.Tags)
-                {
-                    analysisResultText.Text = $"{analysisResultText.Text}\n{tag.Name}";
-                }
             }
             catch (Exception ex)
             {
-                analysisResultText.Text = analysisFailedMessage;
-                Debug.WriteLine($"{analysisResultText.Text}: {ex.Message}");
+                Debug.WriteLine($"{analysisFailedMessage}: {ex.Message}");
             }
         }
 
