@@ -53,8 +53,12 @@ namespace CaptainPlanet
 
             var file = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
             {
+<<<<<<< HEAD
+                PhotoSize = PhotoSize.Medium
+=======
                 MaxWidthHeight = 600,
                 PhotoSize = PhotoSize.MaxWidthHeight
+>>>>>>> 60438b0830fd19b1e97de3dcdd3b64df2621486e
             });
             await AnalyseFile(file);
         }

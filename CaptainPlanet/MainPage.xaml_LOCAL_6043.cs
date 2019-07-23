@@ -40,9 +40,7 @@ namespace CaptainPlanet
             var file = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
             {
                 Directory = "Sample",
-                Name = "xamarin.jpg",
-                MaxWidthHeight = 600,
-                PhotoSize = PhotoSize.MaxWidthHeight
+                Name = "xamarin.jpg"
             });
             await AnalyseFile(file);
         }
@@ -53,8 +51,7 @@ namespace CaptainPlanet
 
             var file = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
             {
-                MaxWidthHeight = 600,
-                PhotoSize = PhotoSize.MaxWidthHeight
+                PhotoSize = PhotoSize.Medium
             });
             await AnalyseFile(file);
         }
@@ -85,7 +82,7 @@ namespace CaptainPlanet
             }
         }
 
-        private async Task<DetectResult> GetImageDescription(Stream imageStream)
+        private async Task<ImageAnalysis> GetImageDescription(Stream imageStream)
         {
             ComputerVisionClient computerVision = new ComputerVisionClient(
                 new ApiKeyServiceClientCredentials(subscriptionKey),
@@ -93,10 +90,9 @@ namespace CaptainPlanet
             computerVision.Endpoint = AppSettingsManager.Settings["CognitiveServicesEndpoint"];
 
             // Analyse.
-            return await computerVision.DetectObjectsInStreamAsync(imageStream);
+            return await computerVision.AnalyzeImageInStreamAsync(imageStream, features, null);
         }
 
-<<<<<<< HEAD
         private void IdentifyObjects(IList<DetectedObject> detectedObjects)
         {
             foreach (DetectedObject o in detectedObjects)
@@ -115,16 +111,11 @@ namespace CaptainPlanet
         }
 
         private void ShowPicture(){
-=======
-        private void ShowPicture()
-        {
->>>>>>> 60438b0830fd19b1e97de3dcdd3b64df2621486e
             noPictureText.IsVisible = false;
             chosenPicture.IsVisible = true;
         }
 
-        private void HidePicture()
-        {
+        private void HidePicture(){
             chosenPicture.IsVisible = false;
             noPictureText.IsVisible = true;
         }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
@@ -37,12 +38,10 @@ namespace CaptainPlanet
                 HidePicture();
                 return;
             }
-            var file = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
+            var file = await CrossMedia.Current.TakePhotoAsync(new Plugin.Media.Abstractions.StoreCameraMediaOptions
             {
                 Directory = "Sample",
-                Name = "xamarin.jpg",
-                MaxWidthHeight = 600,
-                PhotoSize = PhotoSize.MaxWidthHeight
+                Name = "xamarin.jpg"
             });
             await AnalyseFile(file);
         }
@@ -51,11 +50,10 @@ namespace CaptainPlanet
         {
             await CrossMedia.Current.Initialize();
 
-            var file = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
-            {
-                MaxWidthHeight = 600,
-                PhotoSize = PhotoSize.MaxWidthHeight
-            });
+                var file = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
+                {
+                    PhotoSize = PhotoSize.Medium
+                });
             await AnalyseFile(file);
         }
 
@@ -69,14 +67,13 @@ namespace CaptainPlanet
 
             try
             {
+                ShowPicture();
                 chosenPicture.Source = ImageSource.FromStream(() =>
                 {
                     var stream = file.GetStream();
                     return stream;
                 });
                 var result = await GetImageDescription(file.GetStream());
-                ShowPicture();
-                IdentifyObjects(result.Objects);
                 file.Dispose();
             }
             catch (Exception ex)
@@ -85,7 +82,7 @@ namespace CaptainPlanet
             }
         }
 
-        private async Task<DetectResult> GetImageDescription(Stream imageStream)
+        private async Task<ImageAnalysis> GetImageDescription(Stream imageStream)
         {
             ComputerVisionClient computerVision = new ComputerVisionClient(
                 new ApiKeyServiceClientCredentials(subscriptionKey),
@@ -93,38 +90,15 @@ namespace CaptainPlanet
             computerVision.Endpoint = AppSettingsManager.Settings["CognitiveServicesEndpoint"];
 
             // Analyse.
-            return await computerVision.DetectObjectsInStreamAsync(imageStream);
-        }
-
-<<<<<<< HEAD
-        private void IdentifyObjects(IList<DetectedObject> detectedObjects)
-        {
-            foreach (DetectedObject o in detectedObjects)
-            {
-                // Scale rectangle to rendered image
-                var xScaleFactor = chosenPicture.Width / o.Rectangle.W;
-                var yScaleFactor = chosenPicture.Height / o.Rectangle.H;
-                var rectangle = new Rectangle(
-                    chosenPicture.X + (o.Rectangle.W * xScaleFactor),
-                    chosenPicture.Y + (o.Rectangle.H * yScaleFactor),
-                    chosenPicture.Width * yScaleFactor,
-                    chosenPicture.Height * xScaleFactor);
-
-                // Draw this somehow
-            }
+            return await computerVision.AnalyzeImageInStreamAsync(imageStream, features, null);
         }
 
         private void ShowPicture(){
-=======
-        private void ShowPicture()
-        {
->>>>>>> 60438b0830fd19b1e97de3dcdd3b64df2621486e
             noPictureText.IsVisible = false;
             chosenPicture.IsVisible = true;
         }
 
-        private void HidePicture()
-        {
+        private void HidePicture(){
             chosenPicture.IsVisible = false;
             noPictureText.IsVisible = true;
         }
