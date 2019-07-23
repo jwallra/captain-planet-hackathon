@@ -28,6 +28,7 @@ namespace CaptainPlanet
         public MainPage()
         {
             InitializeComponent();
+            whatsCompostableText.Text = AppSettingsManager.Settings["CognitiveServicesEndpoint"];
         }
 
         private async void TakeAPicture(object sender, EventArgs e)
@@ -100,6 +101,7 @@ namespace CaptainPlanet
             ComputerVisionClient computerVision = new ComputerVisionClient(
                 new ApiKeyServiceClientCredentials(subscriptionKey),
                 new System.Net.Http.DelegatingHandler[] { });
+            // analyze?visualFeatures=Categories,Tags,Objects&language=en
             computerVision.Endpoint = "<endpointt>";
 
             // Analyse.

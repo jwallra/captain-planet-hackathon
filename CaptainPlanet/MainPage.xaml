@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:CaptainPlanet" x:Class="CaptainPlanet.MainPage">
         <ScrollView>  
             <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="StartAndExpand">  
-                <Label Text="What's compostable?"/>  
+                <Label x:Name="whatsCompostableText" Text="What's compostable?"/>  
                 <Label x:Name="noPictureText" Text="No picture."/>  
                 <Image x:Name="chosenPicture" HeightRequest="200" IsVisible="false"/>  
                 <Button x:Name="pickAPictureButton" Text="Pick a picture" Clicked="PickAPicture"/>  
