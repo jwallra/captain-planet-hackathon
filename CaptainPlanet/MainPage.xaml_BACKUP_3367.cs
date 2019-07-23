@@ -76,6 +76,24 @@ namespace CaptainPlanet
                 });
                 var result = await GetImageDescription(file.GetStream());
                 file.Dispose();
+<<<<<<< HEAD
+=======
+                if (!result.Tags.Any() && !result.Categories.Any())
+                {
+                    analysisResultText.Text = analysisFailedMessage;
+                    return;
+                }
+                analysisResultText.Text = $"{analysisResultText.Text}\nCategories:";
+                foreach (var category in result.Categories)
+                {
+                    analysisResultText.Text = $"{analysisResultText.Text}\n{category.Name}";
+                }
+                analysisResultText.Text = $"{analysisResultText.Text}\nTags:";
+                foreach (var tag in result.Tags)
+                {
+                    analysisResultText.Text = $"{analysisResultText.Text}\n{tag.Name}";
+                }
+>>>>>>> 2f3838e98fcc3d9198502e187a8636c79332e87f
             }
             catch (Exception ex)
             {
