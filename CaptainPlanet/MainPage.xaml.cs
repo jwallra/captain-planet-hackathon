@@ -41,7 +41,9 @@ namespace CaptainPlanet
             var file = await CrossMedia.Current.TakePhotoAsync(new Plugin.Media.Abstractions.StoreCameraMediaOptions
             {
                 Directory = "Sample",
-                Name = "xamarin.jpg"
+                Name = "xamarin.jpg",
+                MaxWidthHeight = 600,
+                PhotoSize = PhotoSize.MaxWidthHeight
             });
             await AnalyseFile(file);
         }
@@ -50,10 +52,11 @@ namespace CaptainPlanet
         {
             await CrossMedia.Current.Initialize();
 
-                var file = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
-                {
-                    PhotoSize = PhotoSize.Medium
-                });
+            var file = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
+            {
+                MaxWidthHeight = 600,
+                PhotoSize = PhotoSize.MaxWidthHeight
+            });
             await AnalyseFile(file);
         }
 
@@ -61,7 +64,8 @@ namespace CaptainPlanet
         {
             const string analysisFailedMessage = "Picture analysis failed.";
             analysisResultText.Text = "";
-            if (file == null) { 
+            if (file == null)
+            {
                 HidePicture();
                 return;
             }
@@ -76,21 +80,6 @@ namespace CaptainPlanet
                 });
                 var result = await GetImageDescription(file.GetStream());
                 file.Dispose();
-                if (!result.Tags.Any() && !result.Categories.Any())
-                {
-                    analysisResultText.Text = analysisFailedMessage;
-                    return;
-                }
-                analysisResultText.Text = $"{analysisResultText.Text}\nCategories:";
-                foreach (var category in result.Categories)
-                {
-                    analysisResultText.Text = $"{analysisResultText.Text}\n{category.Name}";
-                }
-                analysisResultText.Text = $"{analysisResultText.Text}\nTags:";
-                foreach (var tag in result.Tags)
-                {
-                    analysisResultText.Text = $"{analysisResultText.Text}\n{tag.Name}";
-                }
             }
             catch (Exception ex)
             {
@@ -99,7 +88,7 @@ namespace CaptainPlanet
             }
         }
 
-        private async Task<ImageAnalysis> GetImageDescription(Stream imageStream)
+        private async Task<DetectResult> GetImageDescription(Stream imageStream)
         {
             ComputerVisionClient computerVision = new ComputerVisionClient(
                 new ApiKeyServiceClientCredentials(subscriptionKey),
@@ -107,15 +96,17 @@ namespace CaptainPlanet
             computerVision.Endpoint = AppSettingsManager.Settings["CognitiveServicesEndpoint"];
 
             // Analyse.
-            return await computerVision.AnalyzeImageInStreamAsync(imageStream, features, null);
+            return await computerVision.DetectObjectsInStreamAsync(imageStream);
         }
 
-        private void ShowPicture(){
+        private void ShowPicture()
+        {
             noPictureText.IsVisible = false;
             chosenPicture.IsVisible = true;
         }
 
-        private void HidePicture(){
+        private void HidePicture()
+        {
             chosenPicture.IsVisible = false;
             noPictureText.IsVisible = true;
         }
