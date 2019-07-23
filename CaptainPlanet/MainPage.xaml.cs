@@ -15,20 +15,18 @@ namespace CaptainPlanet
     public partial class MainPage : ContentPage
     {
         // subscriptionKey.
-        private const string subscriptionKey = "<secret>";
+        private string subscriptionKey = AppSettingsManager.Settings["CognitiveServicesApiKey"];
 
-        private static readonly List<VisualFeatureTypes> features =
-    new List<VisualFeatureTypes>()
+        private static readonly List<VisualFeatureTypes> features = new List<VisualFeatureTypes>()
         {
-                    VisualFeatureTypes.Categories,
-                    VisualFeatureTypes.Objects,
-                    VisualFeatureTypes.Tags
+            VisualFeatureTypes.Categories,
+            VisualFeatureTypes.Objects,
+            VisualFeatureTypes.Tags
         };
 
         public MainPage()
         {
             InitializeComponent();
-            whatsCompostableText.Text = AppSettingsManager.Settings["CognitiveServicesEndpoint"];
         }
 
         private async void TakeAPicture(object sender, EventArgs e)
@@ -52,9 +50,9 @@ namespace CaptainPlanet
         {
             await CrossMedia.Current.Initialize();
 
-                var file = await CrossMedia.Current.PickPhotoAsync(new Plugin.Media.Abstractions.PickMediaOptions
+                var file = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
                 {
-                    PhotoSize = Plugin.Media.Abstractions.PhotoSize.Medium
+                    PhotoSize = PhotoSize.Medium
                 });
             await AnalyseFile(file);
         }
@@ -101,8 +99,7 @@ namespace CaptainPlanet
             ComputerVisionClient computerVision = new ComputerVisionClient(
                 new ApiKeyServiceClientCredentials(subscriptionKey),
                 new System.Net.Http.DelegatingHandler[] { });
-            // analyze?visualFeatures=Categories,Tags,Objects&language=en
-            computerVision.Endpoint = "<endpointt>";
+            computerVision.Endpoint = AppSettingsManager.Settings["CognitiveServicesEndpoint"] + "analyze?visualFeatures=Categories,Tags,Objects&language=en";
 
             // Analyse.
             return await computerVision.AnalyzeImageInStreamAsync(imageStream, features, null);
