@@ -7,7 +7,7 @@
                 <Image x:Name="chosenPicture" HeightRequest="200" IsVisible="false"/>  
                 <Button x:Name="pickAPictureButton" Text="Pick a picture" Clicked="PickAPicture"/>  
                 <Button x:Name="takeAPictureButton" Text="Take a picture" Clicked="TakeAPicture"/>  
-                <Label x:Name="analysisResultText" IsVisible="false"/>
+                <Label x:Name="analysisResultText"/>
         </StackLayout>  
         </ScrollView>  
 </ContentPage>

@@ -74,7 +74,6 @@ namespace CaptainPlanet
                     var stream = file.GetStream();
                     return stream;
                 });
-                analysisResultText.IsVisible = true;
                 var result = await GetImageDescription(file.GetStream());
                 file.Dispose();
                 if (!result.Tags.Any() && !result.Categories.Any())
@@ -82,10 +81,15 @@ namespace CaptainPlanet
                     analysisResultText.Text = analysisFailedMessage;
                     return;
                 }
-                analysisResultText.Text = result.Description.Captions.First().Text;
-                foreach (string tag in result.Description.Tags)
+                analysisResultText.Text = $"{analysisResultText.Text}\nCategories:\n{result.Categories.First().Name}";
+                foreach (var category in result.Categories)
                 {
-                    analysisResultText.Text = $"{analysisResultText.Text}\n{tag}";
+                    analysisResultText.Text = $"{analysisResultText.Text}\n{category.Name}";
+                }
+                analysisResultText.Text = $"{analysisResultText.Text}\nTags:\n{result.Tags.First().Name}";
+                foreach (var tag in result.Tags)
+                {
+                    analysisResultText.Text = $"{analysisResultText.Text}\n{tag.Name}";
                 }
             }
             catch (Exception ex)
