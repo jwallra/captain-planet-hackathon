@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms;
+﻿using System;
+using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -6,8 +7,6 @@ namespace CaptainPlanet
 {
     public partial class App : Application
     {
-        public static string CognitiveServicesApiKey;
-
         public App()
         {
             InitializeComponent();
