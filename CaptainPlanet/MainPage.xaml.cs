@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
@@ -24,19 +25,17 @@ namespace CaptainPlanet
 
         public MainPage()
         {
-            //imgBanner.Source = ImageSource.FromResource("XamarinComputerVision.images.banner.png");
-            //imgChoosed.Source = ImageSource.FromResource("XamarinComputerVision.images.thumbnail.jpg");
             InitializeComponent();
         }
 
-        private async void btnTake_Clicked(object sender, EventArgs e)
+        private async void takeAPicture(object sender, EventArgs e)
         {
             await CrossMedia.Current.Initialize();
             try
             {
                 if (!CrossMedia.Current.IsCameraAvailable || !CrossMedia.Current.IsTakePhotoSupported)
                 {
-                    await DisplayAlert("No Camera", ":( No camera available.", "OK");
+                    await DisplayAlert("No Camera", "No camera available.", "OK");
                     return;
                 }
                 var file = await CrossMedia.Current.TakePhotoAsync(new Plugin.Media.Abstractions.StoreCameraMediaOptions
@@ -44,18 +43,25 @@ namespace CaptainPlanet
                     Directory = "Sample",
                     Name = "xamarin.jpg"
                 });
-                if (file == null) return;
-                imgChoosed.Source = ImageSource.FromStream(() => {
+                if (file == null)
+                {
+                    chosenPicture.IsVisible = false;
+                    noPictureText.IsVisible = true;
+                    return;
+                }
+                noPictureText.IsVisible = false;
+                chosenPicture.IsVisible = true;
+                chosenPicture.Source = ImageSource.FromStream(() => {
                     var stream = file.GetStream();
                     return stream;
                 });
                 var result = await GetImageDescription(file.GetStream());
                 file.Dispose();
-                lblResult.Text = null;
-                //lblResult.Text = result.Description.Captions.First().Text;    
+                analysisResultText.Text = null;
+                analysisResultText.Text = result.Description.Captions.First().Text;    
                 foreach (string tag in result.Description.Tags)
                 {
-                    lblResult.Text = lblResult.Text + "\n" + tag;
+                    analysisResultText.Text = analysisResultText.Text + "\n" + tag;
                 }
             }
             catch (Exception ex)
@@ -64,7 +70,7 @@ namespace CaptainPlanet
             }
         }
 
-        private async void btnPick_Clicked(object sender, EventArgs e)
+        private async void pickAPicture(object sender, EventArgs e)
         {
             await CrossMedia.Current.Initialize();
             try
@@ -73,17 +79,24 @@ namespace CaptainPlanet
                 {
                     PhotoSize = Plugin.Media.Abstractions.PhotoSize.Medium
                 });
-                if (file == null) return;
-                imgChoosed.Source = ImageSource.FromStream(() => {
+                if (file == null)
+                {
+                    noPictureText.IsVisible = true;
+                    chosenPicture.IsVisible = false;
+                    return;
+                }
+                noPictureText.IsVisible = false;
+                chosenPicture.IsVisible = true;
+                chosenPicture.Source = ImageSource.FromStream(() => {
                     var stream = file.GetStream();
                     return stream;
                 });
                 var result = await GetImageDescription(file.GetStream());
-                lblResult.Text = null;
+                analysisResultText.Text = null;
                 file.Dispose();
                 foreach (string tag in result.Description.Tags)
                 {
-                    lblResult.Text = lblResult.Text + "\n" + tag;
+                    analysisResultText.Text = analysisResultText.Text + "\n" + tag;
                 }
             }
             catch (Exception ex)
