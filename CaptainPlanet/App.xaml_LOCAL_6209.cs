@@ -6,8 +6,6 @@ namespace CaptainPlanet
 {
     public partial class App : Application
     {
-        public static string CognitiveServicesApiKey;
-
         public App()
         {
             InitializeComponent();
