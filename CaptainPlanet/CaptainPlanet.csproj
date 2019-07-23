@@ -21,15 +21,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="appsettings.json" />
-    <None Remove="App.xaml.cs.orig" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="appsettings.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="App.xaml_BACKUP_6209.cs" />
+    <Compile Remove="App.xaml_REMOTE_6209.cs" />
     <Compile Remove="App.xaml_BASE_6209.cs" />
     <Compile Remove="App.xaml_LOCAL_6209.cs" />
-    <Compile Remove="App.xaml_REMOTE_6209.cs" />
   </ItemGroup>
 </Project>
