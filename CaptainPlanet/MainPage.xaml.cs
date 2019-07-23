@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using Microsoft.Extensions.Configuration;
 using Plugin.Media;
 using Xamarin.Forms;
 
@@ -11,15 +12,13 @@ namespace CaptainPlanet
 {
     public partial class MainPage : ContentPage
     {
-        // subscriptionKey.
-        private const string subscriptionKey = "<SubscriptionKey>";
+        public IConfiguration Configuration = null;
 
-        private static readonly List<VisualFeatureTypes> features =
-    new List<VisualFeatureTypes>()
+        private static readonly List<VisualFeatureTypes> features = new List<VisualFeatureTypes>()
         {
-                    VisualFeatureTypes.Categories,
-                    VisualFeatureTypes.Objects,
-                    VisualFeatureTypes.Tags
+            VisualFeatureTypes.Categories,
+            VisualFeatureTypes.Objects,
+            VisualFeatureTypes.Tags
         };
 
         public MainPage()
@@ -95,7 +94,7 @@ namespace CaptainPlanet
         public async Task<ImageAnalysis> GetImageDescription(Stream imageStream)
         {
             ComputerVisionClient computerVision = new ComputerVisionClient(
-                new ApiKeyServiceClientCredentials(subscriptionKey),
+                new ApiKeyServiceClientCredentials(App.CognitiveServicesApiKey),
                 new System.Net.Http.DelegatingHandler[] { });
             computerVision.Endpoint = "<EndPoint>";
 
