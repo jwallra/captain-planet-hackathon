@@ -99,7 +99,7 @@ namespace CaptainPlanet
             ComputerVisionClient computerVision = new ComputerVisionClient(
                 new ApiKeyServiceClientCredentials(subscriptionKey),
                 new System.Net.Http.DelegatingHandler[] { });
-            computerVision.Endpoint = AppSettingsManager.Settings["CognitiveServicesEndpoint"] + "analyze?visualFeatures=Categories,Tags,Objects&language=en";
+            computerVision.Endpoint = AppSettingsManager.Settings["CognitiveServicesEndpoint"];
 
             // Analyse.
             return await computerVision.AnalyzeImageInStreamAsync(imageStream, features, null);
