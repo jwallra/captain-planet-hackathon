@@ -61,24 +61,24 @@ namespace CaptainPlanet
 
         static void DrawPredictions(MainViewModel vm, SKCanvas canvas, float left, float top, float scaleWidth, float scaleHeight)
         {
-            //if (vm.Predictions == null) return;
+            if (vm.Predictions == null) return;
 
-            //if (!vm.Predictions.Any())
-            //{
-            //    //LabelPrediction(canvas, "Nothing detected", new BoundingBox(0, 0, 1, 1), left, top, scaleWidth, scaleHeight, false);
-            //}
-            //else if (vm.Predictions.All(p => p.BoundingBox != null))
-            //{
-            //    foreach (var prediction in vm.Predictions)
-            //    {
-            //        //LabelPrediction(canvas, prediction.TagName, prediction.BoundingBox, left, top, scaleWidth, scaleHeight);
-            //    }
-            //}
-            //else
-            //{
-            //    var best = vm.Predictions.OrderByDescending(p => p.Probability).First();
-            //    //LabelPrediction(canvas, best.TagName, new BoundingBox(0, 0, 1, 1), left, top, scaleWidth, scaleHeight, false);
-            //}
+            if (!vm.Predictions.Any())
+            {
+                LabelPrediction(canvas, "Nothing detected", new BoundingRect(0, 0, 1, 1), left, top, scaleWidth, scaleHeight, false);
+            }
+            else if (vm.Predictions.All(p => p.Rectangle != null))
+            {
+                foreach (var prediction in vm.Predictions)
+                {
+                    LabelPrediction(canvas, prediction.ObjectProperty, prediction.Rectangle, left, top, scaleWidth, scaleHeight);
+                }
+            }
+            else
+            {
+                var best = vm.Predictions.OrderByDescending(p => p.Confidence).First();
+                LabelPrediction(canvas, best.ObjectProperty, new BoundingRect(0, 0, 1, 1), left, top, scaleWidth, scaleHeight, false);
+            }
         }
 
         static void ClearCanvas(SKImageInfo info, SKCanvas canvas)
@@ -92,18 +92,18 @@ namespace CaptainPlanet
             canvas.DrawRect(info.Rect, paint);
         }
 
-        //static void LabelPrediction(SKCanvas canvas, string tag, BoundingBox box, float left, float top, float width, float height, bool addBox = true)
-        //{
-        //    var scaledBoxLeft = left + (width * (float)box.Left);
-        //    var scaledBoxWidth = width * (float)box.Width;
-        //    var scaledBoxTop = top + (height * (float)box.Top);
-        //    var scaledBoxHeight = height * (float)box.Height;
+        static void LabelPrediction(SKCanvas canvas, string tag, BoundingRect box, float left, float top, float width, float height, bool addBox = true)
+        {
+            var scaledBoxLeft = left + (width * (float)box.X);
+            var scaledBoxWidth = width * (float)box.W;
+            var scaledBoxTop = top + (height * (float)box.Y);
+            var scaledBoxHeight = height * (float)box.H;
 
-        //    if (addBox)
-        //        DrawBox(canvas, scaledBoxLeft, scaledBoxTop, scaledBoxWidth, scaledBoxHeight);
+            if (addBox)
+                DrawBox(canvas, scaledBoxLeft, scaledBoxTop, scaledBoxWidth, scaledBoxHeight);
 
-        //    DrawText(canvas, tag, scaledBoxLeft, scaledBoxTop, scaledBoxWidth, scaledBoxHeight);
-        //}
+            DrawText(canvas, tag, scaledBoxLeft, scaledBoxTop, scaledBoxWidth, scaledBoxHeight);
+        }
 
         static void DrawText(SKCanvas canvas, string tag, float startLeft, float startTop, float scaledBoxWidth, float scaledBoxHeight)
         {
