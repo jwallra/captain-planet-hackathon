@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using Newtonsoft.Json.Linq;
 using Plugin.Media;
 using Plugin.Media.Abstractions;
 using SkiaSharp;
@@ -19,6 +21,8 @@ namespace CaptainPlanet
         const float radius = 2.0f;
         const float xDrop = 2.0f;
         const float yDrop = 2.0f;
+
+        private static string MLBestCategoryCache;
 
         public MainPage()
         {
@@ -45,6 +49,7 @@ namespace CaptainPlanet
 
             if (vm.Image != null)
             {
+                MLBestCategoryCache = null;
                 var scale = Math.Min((float)info.Width / (float)vm.Image.Width, (float)info.Height / (float)vm.Image.Height);
 
                 var scaleHeight = scale * vm.Image.Height;
@@ -55,29 +60,42 @@ namespace CaptainPlanet
 
                 canvas.DrawBitmap(vm.Image, new SKRect(left, top, left + scaleWidth, top + scaleHeight));
                 DrawBorder(canvas, left, top, scaleWidth, scaleHeight);
-                DrawPredictions(vm, canvas, left, top, scale);
+                DrawPredictionsAsync(vm, canvas, left, top, scale);
             }
         }
 
-        static void DrawPredictions(MainViewModel vm, SKCanvas canvas, float left, float top, float scaleFactor)
+        static async Task DrawPredictionsAsync(MainViewModel vm, SKCanvas canvas, float left, float top, float scaleFactor)
         {
             if (vm.Predictions == null) return;
 
             if (!vm.Predictions.Any())
             {
-                LabelPrediction(canvas, "Nothing detected", new BoundingRect(0, 0, 1, 1), left, top, scaleFactor, false);
+                LabelPrediction(canvas, "Nothing detected", new BoundingRect(0, 0, 1, 1), left, top, scaleFactor, SKColors.DarkGray, false);
             }
             else if (vm.Predictions.All(p => p.Rectangle != null))
             {
                 foreach (var prediction in vm.Predictions)
                 {
-                    LabelPrediction(canvas, prediction.ObjectProperty, prediction.Rectangle, left, top, scaleFactor);
+                    SKColor predictionColor;
+                    if (await IsCompostableAsync(vm))
+                    {
+                        predictionColor = SKColors.Green;
+                    }
+                    else if (await IsRecyclableAsync(vm))
+                    {
+                        predictionColor = SKColors.Blue;
+                    }
+                    else
+                    {
+                        predictionColor = SKColors.Red;
+                    }
+                    LabelPrediction(canvas, prediction.ObjectProperty, prediction.Rectangle, left, top, scaleFactor, predictionColor);
                 }
             }
             else
             {
                 var best = vm.Predictions.OrderByDescending(p => p.Confidence).First();
-                LabelPrediction(canvas, best.ObjectProperty, new BoundingRect(0, 0, 1, 1), left, top, scaleFactor, false);
+                LabelPrediction(canvas, best.ObjectProperty, new BoundingRect(0, 0, 1, 1), left, top, scaleFactor, SKColors.DarkGray, false);
             }
         }
 
@@ -90,9 +108,10 @@ namespace CaptainPlanet
             };
 
             canvas.DrawRect(info.Rect, paint);
+            MLBestCategoryCache = null;
         }
 
-        static void LabelPrediction(SKCanvas canvas, string tag, BoundingRect box, float left, float top, float scaleFactor, bool addBox = true)
+        static void LabelPrediction(SKCanvas canvas, string tag, BoundingRect box, float left, float top, float scaleFactor, SKColor color, bool addBox = true)
         {
             var scaledBoxLeft = left + (scaleFactor * box.X);
             var scaledBoxWidth = scaleFactor * box.W;
@@ -100,17 +119,17 @@ namespace CaptainPlanet
             var scaledBoxHeight = scaleFactor * box.H;
 
             if (addBox)
-                DrawBox(canvas, scaledBoxLeft, scaledBoxTop, scaledBoxWidth, scaledBoxHeight);
+                DrawBox(canvas, scaledBoxLeft, scaledBoxTop, scaledBoxWidth, scaledBoxHeight, color);
 
-            DrawText(canvas, tag, scaledBoxLeft, scaledBoxTop, scaledBoxWidth, scaledBoxHeight);
+            DrawText(canvas, tag, scaledBoxLeft, scaledBoxTop, scaledBoxWidth, scaledBoxHeight, color);
         }
 
-        static void DrawText(SKCanvas canvas, string tag, float startLeft, float startTop, float scaledBoxWidth, float scaledBoxHeight)
+        static void DrawText(SKCanvas canvas, string tag, float startLeft, float startTop, float scaledBoxWidth, float scaledBoxHeight, SKColor color)
         {
             var textPaint = new SKPaint
             {
                 IsAntialias = true,
-                Color = SKColors.White,
+                Color = color,
                 Style = SKPaintStyle.Fill,
                 Typeface = SKTypeface.FromFamilyName("Arial")
             };
@@ -144,13 +163,13 @@ namespace CaptainPlanet
                             textPaint);
         }
 
-        static void DrawBox(SKCanvas canvas, float startLeft, float startTop, float scaledBoxWidth, float scaledBoxHeight)
+        static void DrawBox(SKCanvas canvas, float startLeft, float startTop, float scaledBoxWidth, float scaledBoxHeight, SKColor color)
         {
             var strokePaint = new SKPaint
             {
                 IsAntialias = true,
                 Style = SKPaintStyle.Stroke,
-                Color = SKColors.White,
+                Color = color,
                 StrokeWidth = 5,
                 PathEffect = SKPathEffect.CreateDash(new[] { 20f, 20f }, 20f)
             };
@@ -199,7 +218,7 @@ namespace CaptainPlanet
             return path;
         }
 
-        private bool IsCompostable(MainViewModel vm)
+        private static async Task<bool> IsCompostableAsync(MainViewModel vm)
         {
             var compostableCategories = vm.Categories.Where(c =>
                 c.Name.StartsWith("food_", StringComparison.InvariantCulture) ||
@@ -207,23 +226,94 @@ namespace CaptainPlanet
                 c.Name.Equals("outdoor_grass"));
 
             // TODO
-            //if (!compostableCategories.Any())
-            //{
-            //    // Call ML REST API
-            //}
+            if (!compostableCategories.Any())
+            {
+                if (MLBestCategoryCache == null)
+                {
+                    HttpResponseMessage response;
+                    using (var httpClient = new HttpClient())
+                    {
+                        httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
+                        var content = new FormUrlEncodedContent(new[]
+                        {
+                            new KeyValuePair<string, string>("image", vm.Image.Bytes.ToString())
+                        });
+                        response = await httpClient.PostAsync("/predict", content);
+                    }
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        var responseJson = JObject.Parse(responseString).ToObject<Dictionary<string, double>>();
+
+                        var highestConfidence = -1.0;
+                        var bestCategory = "trash";
+                        foreach (string category in responseJson.Keys)
+                        {
+                            var value = responseJson[category];
+                            if (value > highestConfidence)
+                            {
+                                highestConfidence = value;
+                                bestCategory = category;
+                            }
+                        }
+                        MLBestCategoryCache = bestCategory;
+                    }
+                }
+
+                if (MLBestCategoryCache.Equals("cardboard") || MLBestCategoryCache.Equals("paper"))
+                {
+                    return true;
+                }
+            }
 
             return compostableCategories.Any();
         }
 
-        private bool IsRecyclable(MainViewModel vm)
+        private static async Task<bool> IsRecyclableAsync(MainViewModel vm)
         {
             var recyclableCategories = vm.Categories.Where(c => c.Name.Equals("drink_can"));
 
             // TODO
-            //if (!recyclableCategories.Any())
-            //{
-            //    // Call ML REST API
-            //}
+            if (!recyclableCategories.Any())
+            {
+
+                if (MLBestCategoryCache == null)
+                {
+                    HttpResponseMessage response;
+                    using (var httpClient = new HttpClient())
+                    {
+                        httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
+                        var content = new FormUrlEncodedContent(new[]
+                        {
+                            new KeyValuePair<string, string>("image", vm.Image.Bytes.ToString())
+                        });
+                        response = await httpClient.PostAsync("/predict", content);
+                    }
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        var responseJson = JObject.Parse(responseString).ToObject<Dictionary<string, double>>();
+
+                        var highestConfidence = -1.0;
+                        var bestCategory = "trash";
+                        foreach (string category in responseJson.Keys)
+                        {
+                            var value = responseJson[category];
+                            if (value > highestConfidence)
+                            {
+                                highestConfidence = value;
+                                bestCategory = category;
+                            }
+                        }
+                        MLBestCategoryCache = bestCategory;
+                    }
+                }
+
+                if (MLBestCategoryCache.Equals("glass") || MLBestCategoryCache.Equals("metal") || MLBestCategoryCache.Equals("plastic"))
+                {
+                    return true;
+                }
+            }
 
             return recyclableCategories.Any();
         }
