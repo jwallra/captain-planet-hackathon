@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Newtonsoft.Json.Linq;
 using SkiaSharp;
@@ -15,8 +16,6 @@ namespace CaptainPlanet
         const float radius = 2.0f;
         const float xDrop = 2.0f;
         const float yDrop = 2.0f;
-
-        private static string MLBestCategoryCache;
 
         public MainPage()
         {
@@ -43,7 +42,6 @@ namespace CaptainPlanet
 
             if (vm.Image != null)
             {
-                MLBestCategoryCache = null;
                 var scale = Math.Min((float)info.Width / (float)vm.Image.Width, (float)info.Height / (float)vm.Image.Height);
 
                 var scaleHeight = scale * vm.Image.Height;
@@ -102,7 +100,7 @@ namespace CaptainPlanet
             };
 
             canvas.DrawRect(info.Rect, paint);
-            MLBestCategoryCache = null;
+            //MLBestCategoryCache = null;
         }
 
         static void LabelPrediction(SKCanvas canvas, string tag, BoundingRect box, float left, float top, float scaleFactor, SKColor color, bool addBox = true)
@@ -217,70 +215,23 @@ namespace CaptainPlanet
 
             if (!compostableObjects.Any())
             {
-                if (MLBestCategoryCache == null)
-                {
-                    HttpResponseMessage response;
-                    using (var httpClient = new HttpClient())
-                    {
-                        httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
-                        var content = new FormUrlEncodedContent(new[]
-                        {
-                            new KeyValuePair<string, string>("image", vm.Image.Bytes.ToString())
-                        });
-                        try
-                        {
-                            response = httpClient.PostAsync("/predict", content).Result;
-                        }
-                        catch (Exception e)
-                        {
-                            response = new HttpResponseMessage();
-                            response.StatusCode = System.Net.HttpStatusCode.BadRequest;
-                        }
-                    }
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseString = response.Content.ReadAsStringAsync().Result;
-                        var responseJson = JObject.Parse(responseString).ToObject<Dictionary<string, double>>();
-
-                        var highestConfidence = -1.0;
-                        var bestCategory = "trash";
-                        foreach (string category in responseJson.Keys)
-                        {
-                            var value = responseJson[category];
-                            if (value > highestConfidence)
-                            {
-                                highestConfidence = value;
-                                bestCategory = category;
-                            }
-                        }
-                        MLBestCategoryCache = bestCategory;
-                    }
-                }
-
-                if (MLBestCategoryCache != null && (MLBestCategoryCache.Equals("cardboard") || MLBestCategoryCache.Equals("paper")))
-                {
-                    return true;
-                }
-            }
-
-            return compostableObjects.Any();
-        }
-
-        private static bool IsRecyclable(MainViewModel vm)
-        {
-            if (MLBestCategoryCache == null)
-            {
                 HttpResponseMessage response;
+                var bestCategory = "trash";
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
-                    var content = new FormUrlEncodedContent(new[]
+                    //var content = new FormUrlEncodedContent(new[]
+                    //{
+
+                    //    new KeyValuePair<string, string>("image", Encoding.UTF8.GetString(vm.Image.Bytes))
+                    //});
+                    var form = new MultipartFormDataContent
                     {
-                        new KeyValuePair<string, string>("image", vm.Image.Bytes.ToString())
-                    });
+                        { new ByteArrayContent(vm.Image.Bytes, 0, vm.Image.Bytes.Length), "image", "pic.jpg" }
+                    };
                     try
                     {
-                        response = httpClient.PostAsync("/predict", content).Result;
+                        response = httpClient.PostAsync("/predict", form).Result;
                     }
                     catch (Exception e)
                     {
@@ -294,7 +245,6 @@ namespace CaptainPlanet
                     var responseJson = JObject.Parse(responseString).ToObject<Dictionary<string, double>>();
 
                     var highestConfidence = -1.0;
-                    var bestCategory = "trash";
                     foreach (string category in responseJson.Keys)
                     {
                         var value = responseJson[category];
@@ -304,11 +254,60 @@ namespace CaptainPlanet
                             bestCategory = category;
                         }
                     }
-                    MLBestCategoryCache = bestCategory;
+                }
+
+                if (bestCategory.Equals("cardboard") || bestCategory.Equals("paper"))
+                {
+                    return true;
                 }
             }
 
-            if (MLBestCategoryCache != null && (MLBestCategoryCache.Equals("glass") || MLBestCategoryCache.Equals("metal") || MLBestCategoryCache.Equals("plastic")))
+            return compostableObjects.Any();
+        }
+
+        private static bool IsRecyclable(MainViewModel vm)
+        {
+            HttpResponseMessage response;
+            var bestCategory = "trash";
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
+                //var content = new FormUrlEncodedContent(new[]
+                //{
+                //    new KeyValuePair<string, string>("image", Encoding.UTF8.GetString(vm.Image.Bytes))
+                //});
+                var form = new MultipartFormDataContent
+                {
+                    { new ByteArrayContent(vm.Image.Bytes, 0, vm.Image.Bytes.Length), "image", "pic.jpg" }
+                };
+                try
+                {
+                    response = httpClient.PostAsync("/predict", form).Result;
+                }
+                catch (Exception e)
+                {
+                    response = new HttpResponseMessage();
+                    response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                }
+            }
+            if (response.IsSuccessStatusCode)
+            {
+                var responseString = response.Content.ReadAsStringAsync().Result;
+                var responseJson = JObject.Parse(responseString).ToObject<Dictionary<string, double>>();
+
+                var highestConfidence = -1.0;
+                foreach (string category in responseJson.Keys)
+                {
+                    var value = responseJson[category];
+                    if (value > highestConfidence)
+                    {
+                        highestConfidence = value;
+                        bestCategory = category;
+                    }
+                }
+            }
+
+            if (bestCategory.Equals("glass") || bestCategory.Equals("metal") || bestCategory.Equals("plastic"))
             {
                 return true;
             }
