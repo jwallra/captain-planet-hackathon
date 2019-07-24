@@ -201,7 +201,31 @@ namespace CaptainPlanet
 
         private bool IsCompostable(MainViewModel vm)
         {
-            return false;
+            var compostableCategories = vm.Categories.Where(c =>
+                c.Name.StartsWith("food_", StringComparison.InvariantCulture) ||
+                c.Name.StartsWith("plant_", StringComparison.InvariantCulture) ||
+                c.Name.Equals("outdoor_grass"));
+
+            // TODO
+            //if (!compostableCategories.Any())
+            //{
+            //    // Call ML REST API
+            //}
+
+            return compostableCategories.Any();
+        }
+
+        private bool IsRecyclable(MainViewModel vm)
+        {
+            var recyclableCategories = vm.Categories.Where(c => c.Name.Equals("drink_can"));
+
+            // TODO
+            //if (!recyclableCategories.Any())
+            //{
+            //    // Call ML REST API
+            //}
+
+            return recyclableCategories.Any();
         }
     }
 }

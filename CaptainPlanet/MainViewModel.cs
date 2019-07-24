@@ -40,10 +40,11 @@ namespace CaptainPlanet
             computerVision.Endpoint = AppSettingsManager.Settings["CognitiveServicesEndpoint"];
 
             // Analyse.
-            var results = await computerVision.DetectObjectsInStreamAsync(photo.GetStream());
-            AllPredictions = results.Objects
-                                    .Where(p => p.Confidence > Probability)
-                                    .ToList();
+            var objectResults = await computerVision.AnalyzeImageInStreamAsync(photo.GetStream(), new List<VisualFeatureTypes> { VisualFeatureTypes.Objects, VisualFeatureTypes.Categories });
+            AllPredictions = objectResults.Objects
+                .Where(p => p.Confidence > Probability)
+                .ToList();
+            AllCategories = objectResults.Categories.ToList();
         }
 
         SKBitmap image;
@@ -70,6 +71,8 @@ namespace CaptainPlanet
         public string ProbabilityText => $"{Probability:P0}";
 
         List<DetectedObject> allPredictions = new List<DetectedObject>();
+        List<Category> allCategories = new List<Category>();
+
         public List<DetectedObject> AllPredictions
         {
             get => allPredictions;
@@ -80,13 +83,18 @@ namespace CaptainPlanet
             }
         }
 
-        List<Category> allCategories = new List<Category>();
         public List<Category> AllCategories
         {
             get => AllCategories;
+            set
+            {
+                Set(ref allCategories, value);
+                OnPropertyChanged(nameof(Category));
+            }
         }
 
         public List<DetectedObject> Predictions => AllPredictions.Where(p => p.Confidence > Probability).ToList();
+        public List<Category> Categories => AllCategories.ToList();
 
         public ICommand TakePhotoCommand { get; }
         public ICommand PickPhotoCommand { get; }
