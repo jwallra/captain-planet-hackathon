@@ -53,7 +53,7 @@ namespace CaptainPlanet
             set => Set(ref image, value);
         }
 
-        double probability = .75;
+        double probability = .50;
         public double Probability
         {
             get => probability;
@@ -78,6 +78,12 @@ namespace CaptainPlanet
                 Set(ref allPredictions, value);
                 OnPropertyChanged(nameof(Predictions));
             }
+        }
+
+        List<Category> allCategories = new List<Category>();
+        public List<Category> AllCategories
+        {
+            get => AllCategories;
         }
 
         public List<DetectedObject> Predictions => AllPredictions.Where(p => p.Confidence > Probability).ToList();
