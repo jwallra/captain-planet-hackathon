@@ -20,8 +20,7 @@ namespace CaptainPlanet
         private static readonly List<VisualFeatureTypes> features = new List<VisualFeatureTypes>()
         {
             VisualFeatureTypes.Categories,
-            VisualFeatureTypes.Objects,
-            VisualFeatureTypes.Tags
+            VisualFeatureTypes.Objects
         };
 
         public MainViewModel()
@@ -40,7 +39,7 @@ namespace CaptainPlanet
             computerVision.Endpoint = AppSettingsManager.Settings["CognitiveServicesEndpoint"];
 
             // Analyse.
-            var objectResults = await computerVision.AnalyzeImageInStreamAsync(photo.GetStream(), new List<VisualFeatureTypes> { VisualFeatureTypes.Objects, VisualFeatureTypes.Categories });
+            var objectResults = await computerVision.AnalyzeImageInStreamAsync(photo.GetStream(), features);
             AllPredictions = objectResults.Objects
                 .Where(p => p.Confidence > Probability)
                 .ToList();
