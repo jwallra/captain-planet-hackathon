@@ -64,7 +64,7 @@ namespace CaptainPlanet
             }
         }
 
-        static async Task DrawPredictionsAsync(MainViewModel vm, SKCanvas canvas, float left, float top, float scaleFactor)
+        static void DrawPredictionsAsync(MainViewModel vm, SKCanvas canvas, float left, float top, float scaleFactor)
         {
             if (vm.Predictions == null) return;
 
@@ -77,11 +77,11 @@ namespace CaptainPlanet
                 foreach (var prediction in vm.Predictions)
                 {
                     SKColor predictionColor;
-                    if (await IsCompostableAsync(vm))
+                    if (IsCompostable(vm))
                     {
                         predictionColor = SKColors.Green;
                     }
-                    else if (await IsRecyclableAsync(vm))
+                    else if (IsRecyclable(vm))
                     {
                         predictionColor = SKColors.Blue;
                     }
@@ -218,7 +218,7 @@ namespace CaptainPlanet
             return path;
         }
 
-        private static async Task<bool> IsCompostableAsync(MainViewModel vm)
+        private static bool IsCompostable(MainViewModel vm)
         {
             var compostableCategories = vm.Categories.Where(c =>
                 c.Name.StartsWith("food_", StringComparison.InvariantCulture) ||
@@ -238,11 +238,11 @@ namespace CaptainPlanet
                         {
                             new KeyValuePair<string, string>("image", vm.Image.Bytes.ToString())
                         });
-                        response = await httpClient.PostAsync("/predict", content);
+                        response = httpClient.PostAsync("/predict", content).Result;
                     }
                     if (response.IsSuccessStatusCode)
                     {
-                        var responseString = await response.Content.ReadAsStringAsync();
+                        var responseString = response.Content.ReadAsStringAsync().Result;
                         var responseJson = JObject.Parse(responseString).ToObject<Dictionary<string, double>>();
 
                         var highestConfidence = -1.0;
@@ -269,7 +269,7 @@ namespace CaptainPlanet
             return compostableCategories.Any();
         }
 
-        private static async Task<bool> IsRecyclableAsync(MainViewModel vm)
+        private static bool IsRecyclable(MainViewModel vm)
         {
             var recyclableCategories = vm.Categories.Where(c => c.Name.Equals("drink_can"));
 
@@ -287,11 +287,11 @@ namespace CaptainPlanet
                         {
                             new KeyValuePair<string, string>("image", vm.Image.Bytes.ToString())
                         });
-                        response = await httpClient.PostAsync("/predict", content);
+                        response = httpClient.PostAsync("/predict", content).Result;
                     }
                     if (response.IsSuccessStatusCode)
                     {
-                        var responseString = await response.Content.ReadAsStringAsync();
+                        var responseString = response.Content.ReadAsStringAsync().Result;
                         var responseJson = JObject.Parse(responseString).ToObject<Dictionary<string, double>>();
 
                         var highestConfidence = -1.0;
