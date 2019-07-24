@@ -141,8 +141,7 @@ namespace CaptainPlanet
 
             var paint = new SKPaint
             {
-                Style = SKPaintStyle.Fill,
-                Color = SKColors.Green
+                Style = SKPaintStyle.Stroke
             };
 
             var backgroundRect = textBounds;
@@ -163,7 +162,7 @@ namespace CaptainPlanet
             {
                 IsAntialias = true,
                 Style = SKPaintStyle.Stroke,
-                Color = color,
+                // Color = color,
                 StrokeWidth = 5,
                 PathEffect = SKPathEffect.CreateDash(new[] { 20f, 20f }, 20f)
             };
@@ -214,13 +213,9 @@ namespace CaptainPlanet
 
         private static bool IsCompostable(MainViewModel vm)
         {
-            var compostableCategories = vm.Categories.Where(c =>
-                c.Name.StartsWith("food_", StringComparison.InvariantCulture) ||
-                c.Name.StartsWith("plant_", StringComparison.InvariantCulture) ||
-                c.Name.Equals("outdoor_grass"));
+            var compostableObjects = vm.Predictions.Where(c => MainViewModel.CompostableWords.Contains(c.ObjectProperty.ToLower()));
 
-            // TODO
-            if (!compostableCategories.Any())
+            if (!compostableObjects.Any())
             {
                 if (MLBestCategoryCache == null)
                 {
@@ -232,7 +227,15 @@ namespace CaptainPlanet
                         {
                             new KeyValuePair<string, string>("image", vm.Image.Bytes.ToString())
                         });
-                        response = httpClient.PostAsync("/predict", content).Result;
+                        try
+                        {
+                            response = httpClient.PostAsync("/predict", content).Result;
+                        }
+                        catch (Exception e)
+                        {
+                            response = new HttpResponseMessage();
+                            response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                        }
                     }
                     if (response.IsSuccessStatusCode)
                     {
@@ -254,62 +257,62 @@ namespace CaptainPlanet
                     }
                 }
 
-                if (MLBestCategoryCache.Equals("cardboard") || MLBestCategoryCache.Equals("paper"))
+                if (MLBestCategoryCache != null && (MLBestCategoryCache.Equals("cardboard") || MLBestCategoryCache.Equals("paper")))
                 {
                     return true;
                 }
             }
 
-            return compostableCategories.Any();
+            return compostableObjects.Any();
         }
 
         private static bool IsRecyclable(MainViewModel vm)
         {
-            var recyclableCategories = vm.Categories.Where(c => c.Name.Equals("drink_can"));
-
-            // TODO
-            if (!recyclableCategories.Any())
+            if (MLBestCategoryCache == null)
             {
-
-                if (MLBestCategoryCache == null)
+                HttpResponseMessage response;
+                using (var httpClient = new HttpClient())
                 {
-                    HttpResponseMessage response;
-                    using (var httpClient = new HttpClient())
+                    httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
+                    var content = new FormUrlEncodedContent(new[]
                     {
-                        httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
-                        var content = new FormUrlEncodedContent(new[]
-                        {
-                            new KeyValuePair<string, string>("image", vm.Image.Bytes.ToString())
-                        });
+                        new KeyValuePair<string, string>("image", vm.Image.Bytes.ToString())
+                    });
+                    try
+                    {
                         response = httpClient.PostAsync("/predict", content).Result;
                     }
-                    if (response.IsSuccessStatusCode)
+                    catch (Exception e)
                     {
-                        var responseString = response.Content.ReadAsStringAsync().Result;
-                        var responseJson = JObject.Parse(responseString).ToObject<Dictionary<string, double>>();
-
-                        var highestConfidence = -1.0;
-                        var bestCategory = "trash";
-                        foreach (string category in responseJson.Keys)
-                        {
-                            var value = responseJson[category];
-                            if (value > highestConfidence)
-                            {
-                                highestConfidence = value;
-                                bestCategory = category;
-                            }
-                        }
-                        MLBestCategoryCache = bestCategory;
+                        response = new HttpResponseMessage();
+                        response.StatusCode = System.Net.HttpStatusCode.BadRequest;
                     }
                 }
-
-                if (MLBestCategoryCache.Equals("glass") || MLBestCategoryCache.Equals("metal") || MLBestCategoryCache.Equals("plastic"))
+                if (response.IsSuccessStatusCode)
                 {
-                    return true;
+                    var responseString = response.Content.ReadAsStringAsync().Result;
+                    var responseJson = JObject.Parse(responseString).ToObject<Dictionary<string, double>>();
+
+                    var highestConfidence = -1.0;
+                    var bestCategory = "trash";
+                    foreach (string category in responseJson.Keys)
+                    {
+                        var value = responseJson[category];
+                        if (value > highestConfidence)
+                        {
+                            highestConfidence = value;
+                            bestCategory = category;
+                        }
+                    }
+                    MLBestCategoryCache = bestCategory;
                 }
             }
 
-            return recyclableCategories.Any();
+            if (MLBestCategoryCache != null && (MLBestCategoryCache.Equals("glass") || MLBestCategoryCache.Equals("metal") || MLBestCategoryCache.Equals("plastic")))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
