@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Newtonsoft.Json.Linq;
-using Plugin.Media;
-using Plugin.Media.Abstractions;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using Xamarin.Forms;
