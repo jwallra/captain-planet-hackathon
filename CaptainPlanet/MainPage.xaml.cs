@@ -220,10 +220,10 @@ namespace CaptainPlanet
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
-                    var form = new MultipartFormDataContent
-                    {
-                        { new ByteArrayContent(vm.Image.Bytes, 0, vm.Image.Bytes.Length), "image", "pic.jpg" }
-                    };
+                    var form = new MultipartFormDataContent();
+                    var byteArrayContent = new ByteArrayContent(vm.Image.Bytes, 0, vm.Image.Bytes.Length);
+                    byteArrayContent.Headers.Add("Content-Type", "multipart/form-data");
+                    form.Add(byteArrayContent, "image", "pic.jpg");
                     try
                     {
                         response = httpClient.PostAsync("/predict", form).Result;
@@ -267,10 +267,10 @@ namespace CaptainPlanet
             using (var httpClient = new HttpClient())
             {
                 httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
-                var form = new MultipartFormDataContent
-                {
-                    { new ByteArrayContent(vm.Image.Bytes, 0, vm.Image.Bytes.Length), "image", "pic.jpg" }
-                };
+                var form = new MultipartFormDataContent();
+                var byteArrayContent = new ByteArrayContent(vm.Image.Bytes, 0, vm.Image.Bytes.Length);
+                byteArrayContent.Headers.Add("Content-Type", "multipart/form-data");
+                form.Add(byteArrayContent, "image", "pic.jpg");
                 try
                 {
                     response = httpClient.PostAsync("/predict", form).Result;
