@@ -11,6 +11,7 @@
     </ContentPage.ToolbarItems>
     <Grid RowSpacing="20" ColumnSpacing="20" Padding="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="85"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -19,11 +20,39 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <skia:SKCanvasView x:Name="ImageCanvas" 
+        <StackLayout Grid.Row="0" Grid.ColumnSpan="2" Orientation="Vertical" VerticalOptions="Start" HorizontalOptions="Fill" Spacing="4">
+            <Label HorizontalOptions="Start" >
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Green" TextColor="Green"/>
+                        <Span Text=" = Compostable" TextColor="DarkSlateBlue"/>
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Label HorizontalOptions="Start" >
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Blue" TextColor="Blue"/>
+                        <Span Text=" = Recyclable" TextColor="DarkSlateBlue"/>
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Label HorizontalOptions="Start" >
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Red" TextColor="Red"/>
+                        <Span Text=" = Trash/Unknown" TextColor="DarkSlateBlue"/>
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+        </StackLayout>
+        
+        <skia:SKCanvasView x:Name="ImageCanvas"
+                           Grid.Row="1"
                            Grid.ColumnSpan="2"
                            PaintSurface="OnCanvasViewPaintSurface"/>
-
-        <StackLayout Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="10">
+        
+        <StackLayout Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="10">
             <Label Text="Threshold" TextColor="DarkSlateBlue" HorizontalOptions="Start"
                    VerticalOptions="Center"/>
             <Slider Minimum="0" Maximum="1" ThumbColor="DarkSlateBlue" MinimumTrackColor="#FFA0A0"
@@ -34,14 +63,14 @@
                    VerticalOptions="Center"/>
         </StackLayout>
 
-        <Button Grid.Row="2" Grid.Column="0" Text="Take photo" BackgroundColor="DarkSlateBlue" 
+        <Button Grid.Row="3" Grid.Column="0" Text="Take photo" BackgroundColor="DarkSlateBlue" 
                 TextColor="White" Command="{Binding TakePhotoCommand}"
                 IsEnabled="{Binding IsEnabled}"/>
-        <Button Grid.Row="2" Grid.Column="1" Text="Choose photo" BackgroundColor="DarkSlateBlue" 
+        <Button Grid.Row="3" Grid.Column="1" Text="Choose photo" BackgroundColor="DarkSlateBlue" 
                 TextColor="White" Command="{Binding PickPhotoCommand}"
                 IsEnabled="{Binding IsEnabled}"/>
         
-        <Grid Grid.RowSpan="3" Grid.ColumnSpan="2" IsVisible="{Binding IsBusy}" 
+        <Grid Grid.RowSpan="4" Grid.ColumnSpan="2" IsVisible="{Binding IsBusy}" 
               Margin="-20"
               BackgroundColor="{StaticResource BusySheetBackground}">
             <lottie:AnimationView Animation="loader.json" 

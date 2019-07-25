@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -96,11 +97,10 @@ namespace CaptainPlanet
             var paint = new SKPaint
             {
                 Style = SKPaintStyle.Fill,
-                Color = SKColors.White
+                Color = new SKColor(0, 0, 0, 0)
             };
-
+            canvas.Clear();
             canvas.DrawRect(info.Rect, paint);
-            //MLBestCategoryCache = null;
         }
 
         static void LabelPrediction(SKCanvas canvas, string tag, BoundingRect box, float left, float top, float scaleFactor, SKColor color, bool addBox = true)
@@ -220,10 +220,18 @@ namespace CaptainPlanet
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
-                    var form = new MultipartFormDataContent();
+
+                    using (MemoryStream memStream = new MemoryStream())
+                    using (SKManagedWStream wstream = new SKManagedWStream(memStream)) {
+                        var result = vm.Image.PeekPixels().Encode(wstream, SKEncodedImageFormat.Jpeg, 100);
+                    }
+
                     var byteArrayContent = new ByteArrayContent(vm.Image.Bytes, 0, vm.Image.Bytes.Length);
                     byteArrayContent.Headers.Add("Content-Type", "multipart/form-data");
+
+                    var form = new MultipartFormDataContent();
                     form.Add(byteArrayContent, "image", "pic.jpg");
+
                     try
                     {
                         response = httpClient.PostAsync("/predict", form).Result;
@@ -267,10 +275,19 @@ namespace CaptainPlanet
             using (var httpClient = new HttpClient())
             {
                 httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
-                var form = new MultipartFormDataContent();
+
+                using (MemoryStream memStream = new MemoryStream())
+                using (SKManagedWStream wstream = new SKManagedWStream(memStream))
+                {
+                    var result = vm.Image.PeekPixels().Encode(wstream, SKEncodedImageFormat.Jpeg, 100);
+                }
+
                 var byteArrayContent = new ByteArrayContent(vm.Image.Bytes, 0, vm.Image.Bytes.Length);
                 byteArrayContent.Headers.Add("Content-Type", "multipart/form-data");
+
+                var form = new MultipartFormDataContent();
                 form.Add(byteArrayContent, "image", "pic.jpg");
+
                 try
                 {
                     response = httpClient.PostAsync("/predict", form).Result;
