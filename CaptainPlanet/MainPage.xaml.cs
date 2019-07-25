@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Newtonsoft.Json.Linq;
 using SkiaSharp;
@@ -63,7 +62,25 @@ namespace CaptainPlanet
 
             if (!vm.Predictions.Any())
             {
-                LabelPrediction(canvas, "Nothing detected", new BoundingRect(0, 0, 1, 1), left, top, scaleFactor, SKColors.DarkGray, false);
+                SKColor predictionColor;
+                string labelText;
+                if (IsCompostable(vm))
+                {
+                    predictionColor = SKColors.Green;
+                    labelText = "Compostable";
+                }
+                else if (IsRecyclable(vm))
+                {
+                    predictionColor = SKColors.Blue;
+                    labelText = "Recyclable";
+                }
+                else
+                {
+                    predictionColor = SKColors.Red;
+                    labelText = "Trash/Unknown";
+                }
+                LabelPrediction(canvas, labelText, new BoundingRect(0, 0, vm.Image.Width, vm.Image.Height), left, top, scaleFactor, predictionColor);
+                //LabelPrediction(canvas, "Nothing detected", new BoundingRect(0, 0, 1, 1), left, top, scaleFactor, SKColors.DarkGray, false);
             }
             else if (vm.Predictions.All(p => p.Rectangle != null))
             {
@@ -160,7 +177,6 @@ namespace CaptainPlanet
             {
                 IsAntialias = true,
                 Style = SKPaintStyle.Stroke,
-                // Color = color,
                 StrokeWidth = 5,
                 PathEffect = SKPathEffect.CreateDash(new[] { 20f, 20f }, 20f)
             };
@@ -221,12 +237,15 @@ namespace CaptainPlanet
                 {
                     httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
 
+                    byte[] byteArray;
                     using (MemoryStream memStream = new MemoryStream())
                     using (SKManagedWStream wstream = new SKManagedWStream(memStream)) {
-                        var result = vm.Image.PeekPixels().Encode(wstream, SKEncodedImageFormat.Jpeg, 100);
+                        var result = vm.Image.Encode(wstream, SKEncodedImageFormat.Jpeg, 100);
+                        byteArray = memStream.ToArray();
+
                     }
 
-                    var byteArrayContent = new ByteArrayContent(vm.Image.Bytes, 0, vm.Image.Bytes.Length);
+                    var byteArrayContent = new ByteArrayContent(byteArray, 0, byteArray.Length);
                     byteArrayContent.Headers.Add("Content-Type", "multipart/form-data");
 
                     var form = new MultipartFormDataContent();
@@ -276,13 +295,15 @@ namespace CaptainPlanet
             {
                 httpClient.BaseAddress = new Uri("http://bananapi.westus.cloudapp.azure.com:5000");
 
+                byte[] byteArray;
                 using (MemoryStream memStream = new MemoryStream())
                 using (SKManagedWStream wstream = new SKManagedWStream(memStream))
                 {
-                    var result = vm.Image.PeekPixels().Encode(wstream, SKEncodedImageFormat.Jpeg, 100);
+                    var result = vm.Image.Encode(wstream, SKEncodedImageFormat.Jpeg, 100);
+                    byteArray = memStream.ToArray();
                 }
 
-                var byteArrayContent = new ByteArrayContent(vm.Image.Bytes, 0, vm.Image.Bytes.Length);
+                var byteArrayContent = new ByteArrayContent(byteArray, 0, byteArray.Length);
                 byteArrayContent.Headers.Add("Content-Type", "multipart/form-data");
 
                 var form = new MultipartFormDataContent();
