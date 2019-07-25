@@ -38,7 +38,7 @@ namespace CaptainPlanet
             "coriander", "dill", "parsley", "rosemary", "sage", "thyme", "chilli powder", "cinnamon", "cumin", "curry powder", "nutmeg",
             "paprika", "saffron", "organic", "ready meal", "bag of potatoes", "bar of chocolate", "carton of milk", "box of eggs",
             "tree", "flower", "herb", "bush", "plant", "soil", "dirt", "evergreen", "pine", "palm tree", "dandelion", "hedge", "leaf",
-            "grass", "cactus"
+            "grass", "cactus", "orchard apple tree", "animal", "sea urchin", "seaweed"
         };
 
         // subscriptionKey.

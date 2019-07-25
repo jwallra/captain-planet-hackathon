@@ -336,7 +336,7 @@ namespace CaptainPlanet
                 }
             }
 
-            if (bestCategory.Equals("glass") || bestCategory.Equals("metal") || bestCategory.Equals("plastic"))
+            if (bestCategory.Equals("glass") || bestCategory.Equals("metal"))
             {
                 return true;
             }
